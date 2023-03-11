@@ -72,5 +72,25 @@ namespace TestSoup.Controllers {
             }
             return Ok("HOla");
         }
+
+        private string GetXmlString() {
+            string xmlString = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <soapenv:Envelope xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ubic=""http://ubicaplus.webservice.com"">
+                           <soapenv:Header/>
+                           <soapenv:Body>
+                              <ubic:consultaUbicaPlus soapenv:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">
+                                 <parametrosUbica xsi:type=""dto:ParametrosUbicaPlusDTO"" xmlns:dto=""http://dto.ubicaplus.webservice.com"">
+                                    <codigoInformacion xsi:type=""xsd:string"">5632</codigoInformacion>
+                                    <motivoConsulta xsi:type=""xsd:string"">24</motivoConsulta>
+                                    <numeroIdentificacion xsi:type=""xsd:string"">17809529</numeroIdentificacion>
+                                    <primerApellido xsi:type=""xsd:string"">JIMENEZ</primerApellido>
+                                    <tipoIdentificacion xsi:type=""xsd:string"">1</tipoIdentificacion>
+                                 </parametrosUbica>
+                              </ubic:consultaUbicaPlus>
+                           </soapenv:Body>
+                        </soapenv:Envelope>";
+
+            return xmlString;
+        }
     }
 }
