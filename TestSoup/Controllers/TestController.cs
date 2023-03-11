@@ -24,9 +24,9 @@ namespace TestSoup.Controllers {
 
 
             Envelope data = new Envelope() {
-                Body =new Body() {
+                Body = new Body() {
                     consultaUbicaPlus = new ConsultaUbicaPlus() {
-                        parametrosUbica = new ParametrosUbica(){
+                        parametrosUbica = new ParametrosUbica() {
                             motivoConsulta = "24",
                             codigoInformacion = "5632",
                             numeroIdentificacion = "17809529",
@@ -35,7 +35,7 @@ namespace TestSoup.Controllers {
                         }
                     }
                 },
-                Header  = ""
+                Header = ""
             };
 
 
@@ -59,11 +59,11 @@ namespace TestSoup.Controllers {
                 var authInfoEncoded = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
 
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authInfoEncoded);
-                var content = new StringContent(xmlData, Encoding.UTF8, "text/xml");
+                var content = new StringContent(GetXmlString(), Encoding.UTF8, "text/xml");
 
                 var response = await client.PostAsync("https://miportafoliouat.transunion.co/ws/UbicaPlusWebService/services/UbicaPlus", content);
                 var content2 = await response.Content.ReadAsStringAsync();
-                return Ok(content2);
+                return StatusCode((int)response.StatusCode, content2);
 
             }
             catch (Exception ex) {
@@ -74,21 +74,20 @@ namespace TestSoup.Controllers {
         }
 
         private string GetXmlString() {
-            string xmlString = @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <soapenv:Envelope xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ubic=""http://ubicaplus.webservice.com"">
-                           <soapenv:Header/>
-                           <soapenv:Body>
-                              <ubic:consultaUbicaPlus soapenv:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">
-                                 <parametrosUbica xsi:type=""dto:ParametrosUbicaPlusDTO"" xmlns:dto=""http://dto.ubicaplus.webservice.com"">
-                                    <codigoInformacion xsi:type=""xsd:string"">5632</codigoInformacion>
-                                    <motivoConsulta xsi:type=""xsd:string"">24</motivoConsulta>
-                                    <numeroIdentificacion xsi:type=""xsd:string"">17809529</numeroIdentificacion>
-                                    <primerApellido xsi:type=""xsd:string"">JIMENEZ</primerApellido>
-                                    <tipoIdentificacion xsi:type=""xsd:string"">1</tipoIdentificacion>
-                                 </parametrosUbica>
-                              </ubic:consultaUbicaPlus>
-                           </soapenv:Body>
-                        </soapenv:Envelope>";
+            string xmlString = @"<soapenv:Envelope xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ubic=""http://ubicaplus.webservice.com"">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ubic:consultaUbicaPlus soapenv:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">
+         <parametrosUbica xsi:type=""dto:ParametrosUbicaPlusDTO"" xmlns:dto=""http://dto.ubicaplus.webservice.com"">
+            <codigoInformacion xsi:type=""soapenc:string"" xmlns:soapenc=""http://schemas.xmlsoap.org/soap/encoding/"">5632</codigoInformacion>
+            <motivoConsulta xsi:type=""soapenc:string"" xmlns:soapenc=""http://schemas.xmlsoap.org/soap/encoding/"">24</motivoConsulta>
+            <numeroIdentificacion xsi:type=""soapenc:string"" xmlns:soapenc=""http://schemas.xmlsoap.org/soap/encoding/"">17809529</numeroIdentificacion>
+            <primerApellido xsi:type=""soapenc:string"" xmlns:soapenc=""http://schemas.xmlsoap.org/soap/encoding/"">JIMENEZ</primerApellido>
+            <tipoIdentificacion xsi:type=""soapenc:string"" xmlns:soapenc=""http://schemas.xmlsoap.org/soap/encoding/"">1</tipoIdentificacion>
+         </parametrosUbica>
+      </ubic:consultaUbicaPlus>
+   </soapenv:Body>
+</soapenv:Envelope>";
 
             return xmlString;
         }
