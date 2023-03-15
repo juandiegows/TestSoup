@@ -18,6 +18,7 @@ using Microsoft.Web.Services3;
 using System.Xml;
 using System.Security.Cryptography.Xml;
 using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace TestSoup.Controllers {
     [Route("api/[controller]")]
@@ -37,7 +38,7 @@ namespace TestSoup.Controllers {
             try {
 
                 var cert = new X509Certificate2(certPath, password);
-                cert.FriendlyName = "MetlifeTESTJK1";
+                cert.FriendlyName = "MetlifeTESTJK1".ToLower();
 
                 var handler = new HttpClientHandler();
 
@@ -75,11 +76,14 @@ namespace TestSoup.Controllers {
                 KeyInfo keyInfo = new KeyInfo();
                 keyInfo.AddClause(new KeyInfoX509Data(cert));
                 signedXml.KeyInfo = keyInfo;
+
                 signedXml.ComputeSignature();
 
                 XmlElement signatureElement = signedXml.GetXml();
-                XmlElement soapHeader = (XmlElement)(xmlDoc.GetElementsByTagName("soapenv:Header")[0]);
+                XmlElement soapHeader = (XmlElement)(xmlDoc.GetElementsByTagName("wsse:Security")[0]);
+                
                 soapHeader.AppendChild(signatureElement);
+                
 
 
                 var content = new StringContent(xmlDoc.OuterXml, Encoding.UTF8, "application/xml");
@@ -87,7 +91,7 @@ namespace TestSoup.Controllers {
                 var response = await client.PostAsync(url, content);
                 var content2 = await response.Content.ReadAsStringAsync();
          
-                return StatusCode((int)response.StatusCode, xmlDoc.OuterXml);
+                return StatusCode((int)response.StatusCode, content2 +"\n "+ xmlDoc.OuterXml);
 
             }
             catch (Exception ex) {
@@ -137,8 +141,19 @@ namespace TestSoup.Controllers {
         }
 
         private string GetXmlString() {
-            string xmlString = @"<soapenv:Envelope xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ubic=""http://ubicaplus.webservice.com"">
+            string xmlString = @"<soapenv:Envelope 
+xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" 
+xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" 
+xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" 
+xmlns:ubic=""http://ubicaplus.webservice.com""
+xmlns:ds=""http://www.w3.org/2000/09/xmldsig#"">
+>
   <soapenv:Header >
+<wsse:Security xmlns:wsse=""http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"" xmlns:wsu=""http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"">
+
+
+</wsse:Security>
+
   </soapenv:Header>
 
 
@@ -157,6 +172,8 @@ namespace TestSoup.Controllers {
 
             return xmlString;
         }
+
+      
 
     }
 }
