@@ -81,23 +81,39 @@ namespace TestSoup.Controllers {
 
                 XmlElement signatureElement = signedXml.GetXml();
                 XmlElement soapHeader = (XmlElement)(xmlDoc.GetElementsByTagName("wsse:Security")[0]);
-                
-                soapHeader.AppendChild(signatureElement);
-                
 
+                soapHeader.AppendChild(signatureElement);
+                TimeSlamp(xmlDoc, soapHeader);
 
                 var content = new StringContent(xmlDoc.OuterXml, Encoding.UTF8, "application/xml");
 
                 var response = await client.PostAsync(url, content);
                 var content2 = await response.Content.ReadAsStringAsync();
-         
-                return StatusCode((int)response.StatusCode, content2 +"\n "+ xmlDoc.OuterXml);
+
+                return StatusCode((int)response.StatusCode, content2 + "\n " + xmlDoc.OuterXml);
 
             }
             catch (Exception ex) {
 
                 return BadRequest(ex.Message + " => " + certPath);
             }
+        }
+
+        private static void TimeSlamp(XmlDocument xmlDoc, XmlElement soapHeader) {
+            XmlElement timestamp = xmlDoc.CreateElement("wsu", "Timestamp", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd");
+            timestamp.SetAttribute("Id", "TS-7ECF631BE8AE9E5B09167752860077852");
+
+            // Crea los elementos Created y Expires dentro del elemento Timestamp
+            XmlElement created = xmlDoc.CreateElement("wsu", "Created", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd");
+            created.InnerText = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+
+            XmlElement expires = xmlDoc.CreateElement("wsu", "Expires", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd");
+            expires.InnerText = DateTime.UtcNow.AddSeconds(10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+
+            // Agrega los elementos Created y Expires al elemento Timestamp
+            timestamp.AppendChild(created);
+            timestamp.AppendChild(expires);
+            soapHeader.AppendChild(timestamp);
         }
 
         [HttpGet("login")]
