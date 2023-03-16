@@ -67,24 +67,7 @@ namespace TestSoup.Controllers {
                 XmlDocument xmlDoc = new XmlDocument();
                 xmlDoc.LoadXml(GetXmlString());
 
-                SignedXml signedXml = new SignedXml(xmlDoc);
-                signedXml.SigningKey = cert.PrivateKey;
-                Reference reference = new Reference("#body");
-
-                signedXml.AddReference(reference);
-
-                KeyInfo keyInfo = new KeyInfo();
-                keyInfo.AddClause(new KeyInfoX509Data(cert));
-                signedXml.KeyInfo = keyInfo;
-
-                signedXml.ComputeSignature();
-
-                XmlElement signatureElement = signedXml.GetXml();
-                XmlElement soapHeader = (XmlElement)(xmlDoc.GetElementsByTagName("wsse:Security")[0]);
-
-                soapHeader.AppendChild(signatureElement);
-                TimeSlamp(xmlDoc, soapHeader);
-
+                SignedXML(cert, xmlDoc);
                 var content = new StringContent(xmlDoc.OuterXml, Encoding.UTF8, "application/xml");
 
                 var response = await client.PostAsync(url, content);
@@ -97,6 +80,26 @@ namespace TestSoup.Controllers {
 
                 return BadRequest(ex.Message + " => " + certPath);
             }
+        }
+
+        private static void SignedXML(X509Certificate2 cert, XmlDocument xmlDoc) {
+            SignedXml signedXml = new SignedXml(xmlDoc);
+            signedXml.SigningKey = cert.PrivateKey;
+            Reference reference = new Reference("#body");
+
+            signedXml.AddReference(reference);
+
+            KeyInfo keyInfo = new KeyInfo();
+            keyInfo.AddClause(new KeyInfoX509Data(cert));
+            signedXml.KeyInfo = keyInfo;
+
+            signedXml.ComputeSignature();
+
+            XmlElement signatureElement = signedXml.GetXml();
+            XmlElement soapHeader = (XmlElement)(xmlDoc.GetElementsByTagName("wsse:Security")[0]);
+            TimeSlamp(xmlDoc, soapHeader);
+
+            soapHeader.AppendChild(signatureElement);
         }
 
         private static void TimeSlamp(XmlDocument xmlDoc, XmlElement soapHeader) {
